@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "vpu25.h"
+#include "vbic.h"
 #include "mc68230.h"
+#include "ascu2.h"
 
 static uint8_t * const           sysctl  = (uint8_t *)(0xfff90097);
 static uint8_t * const           PIT     = (uint8_t *)(0xFFF88000);

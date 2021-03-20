@@ -1,5 +1,6 @@
 C_FILES = vpu25.c ascu2.c mc68230.c vbic.c
 O_FILES = $(patsubst %.c,%.o,$(C_FILES))
+D_FILES = $(patsubst %.c,%.d,$(C_FILES))
 
 GCCFLAGS = -Wall -m68010 -mtune=68020 -g
 GCCFLAGS += -MMD
@@ -15,7 +16,7 @@ vpu25.run: vpu25.o ascu2.o mc68230.o vbic.o
 
 clean:
 	$(RM) $(O_FILES) vpu25.run vpu25.map
-	$(RM) $(C_FILES:%.c=%.d)
+	$(RM) $(D_FILES)
 
 distclean: clean
 
@@ -27,4 +28,4 @@ upload: vpu25.run
 	sleep 1
 	/bin/echo -e "J\r\n" >/dev/ttyUSB0
 
--include $(C_FILES:%.c=%.d)
+-include $(D_FILES)
