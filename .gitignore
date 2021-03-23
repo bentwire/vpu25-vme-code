@@ -3,3 +3,5 @@
 *.lst
 *.map
 *.run
+ctags
+tags

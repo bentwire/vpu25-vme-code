@@ -25,6 +25,8 @@ static mc68230_dev_t pit2 = { .addr = ascu2_addr + ascu2_pit2_offs, }; // PIT2 P
  */
 void ASCU2Init(void)
 {
+    MC68230Init(&pit1);
+    MC68230Init(&pit2);
 }
 
 /**

@@ -1,14 +1,19 @@
 #include <stdio.h>
+#include <unistd.h>
+
 #include "vpu25.h"
 #include "vbic.h"
 #include "mc68230.h"
 #include "ascu2.h"
+#include "vbic.h"
 
 static uint8_t * const           sysctl  = (uint8_t *)(0xfff90097);
 static uint8_t * const           PIT     = (uint8_t *)(0xFFF88000);
 static volatile uint32_t         ticker  = 0;
 static volatile uint32_t         counter = 0;
 static volatile uint32_t * const vmecntr = (uint32_t *)(0x10000000); // In the 256M ram card.
+
+static vbic_dev_t *vbic;
 
 static mc68230_dev_t pit; // The PIT controls the LEDs, the dip switches, the interrupts from the 2 IP slots, and a status reg.
 
@@ -81,10 +86,15 @@ void BoardAssertSysFail(void)
  *   VME_BUS_BR_MASK         = 0xfd,
  **/
 
+extern uint32_t havebyte(void);
+
 int main(void)
 {
-    printf("HI\r\n");
+    char buf[256];
 
+    printf("HI\n");
+
+    vbic = VBICInit((uint8_t *)0xfff90000);
     BoardInitPIT();
     BoardSetVMEBusReqLvl(0);                       // Bus req level 0
     BoardSetVMEBusRelMethod(VME_BUS_BR_ROR);       // Release on request.
@@ -93,18 +103,28 @@ int main(void)
     //setVMEBusArbMethod(VME_BUS_ARB_PRI);     // Priority, br3 is highest prio, followed by 2,1,0.
     //setVMEBusTimeout(VME_BUS_TIMEOUT_16US);  // 128us Timeout.
 
-    BoardInitMSM(timer_isr, (irq_handler_t)(0x100), 2);
+    VBICInitMSM(vbic, timer_isr, (irq_handler_t)(0x100), 2);
 
     BoardDeAssertSysFail();
 
     asm volatile("and.w #0xf0ff,%sr"); // Enable interrupts
 
-    while(1)
+    //while(getchar() != 0x1b)  // Hit escape to quit.
+    while(havebyte() == 0)  // Hit any key.
     {
-      printf("Ticks since start: %ld\r\n", ticker);
-      sleepms(1000);
+        //buf[255] = 0;
+        uint32_t start_ticks;
+        uint32_t end_ticks;
+        uint32_t lost_ticks;
+        start_ticks = ticker;
+        printf("Ticks since start: %ld\n", start_ticks);
+        end_ticks = ticker;
+        lost_ticks = end_ticks - start_ticks;
+        //printf("%ld\n", lost_ticks);
+        //printf("ALSO: '%s'\n", buf);
+        sleepms(1000 - lost_ticks - (start_ticks % 1000));
     }
-    printf("DONE\r\n");
+    printf("DONE\n");
     return 0;
 }
 
@@ -211,21 +231,4 @@ void BoardSetVMEBusTimeout(sysctl_bits_t method)
             break;
     } 
 }
-/**
- * initMSM: Set up the millisecond marker timer
- *
- */
-void BoardInitMSM(irq_handler_t handler, irq_handler_t vec, uint8_t lvl) // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
-{
-    uint8_t *msmctl     = (uint8_t *)(0xfff90051);
-    uint8_t *icmsm      = (uint8_t *)(0xfff9004f);
-    uint8_t *vectmsm    = (uint8_t *)(0xfff90019);
-    uint8_t *irmaskb    = (uint8_t *)(0xfff9001f);
 
-    *msmctl = 0x03; // Set freq to 1ms
-    if (lvl > 7) lvl = 7;
-    *icmsm = lvl; // Set interrupt level, between 1-7, 0 is disable.
-    *vectmsm = (uint32_t)(vec)/4;  // This is very unsafe!  It relies on pointers being 32bits.
-    *(uint32_t*)(vec) = (uint32_t)(handler);
-    *irmaskb |= 0x40; // unmask MSM irq.
-}

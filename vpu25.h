@@ -16,12 +16,10 @@ typedef enum {
     VME_BUS_BR_MASK         = 0xfd,
 } sysctl_bits_t;
 
-typedef void (*irq_handler_t)(uint16_t vect);
 
 void BoardSetVMEBusReqLvl(uint8_t lvl);
 void BoardSetVMEBusRelMethod(sysctl_bits_t method);
 void BoardSetVMEBusArbMethod(sysctl_bits_t method);
 void BoardSetVMEBusTimeout(sysctl_bits_t method);
-void BoardInitMSM(irq_handler_t handler, irq_handler_t vec, uint8_t lvl); // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
 
 #endif //__VPU25_H__
