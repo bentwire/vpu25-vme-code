@@ -3,7 +3,8 @@ OUTPUT_ARCH(m68k)
 /* Uncomment this if you want srecords. This is needed for a.out
  * if you plan to use GDB.
  */
-OUTPUT_FORMAT(srec)
+/*OUTPUT_FORMAT(srec)*/
+OUTPUT_FORMAT(elf32-m68k)
 
 SEARCH_DIR(.)
 GROUP(-lvpu25 -lc -lgcc)
