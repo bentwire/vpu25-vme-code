@@ -6,6 +6,7 @@
 #include "mc68230.h"
 #include "ascu2.h"
 #include "vbic.h"
+#include "vacs.h"
 
 static uint8_t * const           sysctl  = (uint8_t *)(0xfff90097);
 static uint8_t * const           PIT     = (uint8_t *)(0xFFF88000);
@@ -94,6 +95,16 @@ int main(void)
 
     printf("HI\n");
 
+    uint8_t * vme32start = (uint8_t *)(0x10000000);
+    uint8_t * vme32end = (uint8_t *)(0xBFFF0000);
+    uint8_t * vme32offs;
+
+    for (vme32offs = vme32start; vme32offs < vme32end; vme32offs += (uint32_t)0x00100000)
+    {
+        //printf("VACS: %p\n", vme32offs);
+        VACSv1SetForAddress(vme32offs, false, false, false);
+    }
+
     vbic = VBICInit((uint8_t *)0xfff90000);
     BoardInitPIT();
     BoardSetVMEBusReqLvl(0);                       // Bus req level 0
@@ -103,7 +114,7 @@ int main(void)
     //setVMEBusArbMethod(VME_BUS_ARB_PRI);     // Priority, br3 is highest prio, followed by 2,1,0.
     //setVMEBusTimeout(VME_BUS_TIMEOUT_16US);  // 128us Timeout.
 
-    VBICInitMSM(vbic, timer_isr, (irq_handler_t)(0x100), 2);
+    VBICInitMSM(vbic, timer_isr, 0x100, 2);
 
     BoardDeAssertSysFail();
 
@@ -231,4 +242,5 @@ void BoardSetVMEBusTimeout(sysctl_bits_t method)
             break;
     } 
 }
+/* vim: set ai expandtab ts=4 sts=4 sw=4: */
 

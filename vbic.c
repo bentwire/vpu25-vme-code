@@ -3,29 +3,6 @@
 struct _vbic_dev_t
 {
     uint8_t * base_addr;
-    uint8_t * vectnmi;
-    uint8_t * vectlir1;
-    uint8_t * vectlir2;
-    uint8_t * vectlir3;
-    uint8_t * vectlir4;
-    uint8_t * vectlir5;
-    uint8_t * vectlir6;
-    uint8_t * vectlir7;
-    uint8_t * vectlir8;
-    uint8_t * vectlir9;
-    uint8_t * vectlir10;
-    uint8_t * vectvig;
-    uint8_t * vectmsm;
-    uint8_t * vectvme;
-    uint8_t * irmaska;
-    uint8_t * irmaskb;
-    uint8_t * irmaskc;
-    uint8_t * irscana;
-    uint8_t * irscanb;
-    uint8_t * irscanc;
-    uint8_t * vbicctl;
-    uint8_t * msmctl;
-    uint8_t * icmsm;
 };
 
 static vbic_dev_t VBIC; // There is only ever 1 VBIC.
@@ -103,39 +80,376 @@ typedef enum
 vbic_dev_t *VBICInit(uint8_t * vbic_base)
 {
     VBIC.base_addr = vbic_base;
-    VBIC.vectnmi   = VBIC.base_addr + (VECTNMI * 2) + 1;
-    VBIC.vectlir1  = VBIC.base_addr + (VECTLIR1 * 2) + 1;
-    VBIC.vectlir2  = VBIC.base_addr + (VECTLIR2 * 2) + 1;
-    VBIC.vectlir3  = VBIC.base_addr + (VECTLIR3 * 2) + 1;
-    VBIC.vectlir4  = VBIC.base_addr + (VECTLIR4 * 2) + 1;
-    VBIC.vectlir5  = VBIC.base_addr + (VECTLIR5 * 2) + 1;
-    VBIC.vectlir6  = VBIC.base_addr + (VECTLIR6 * 2) + 1;
-    VBIC.vectlir7  = VBIC.base_addr + (VECTLIR7 * 2) + 1;
-    VBIC.vectlir8  = VBIC.base_addr + (VECTLIR8 * 2) + 1;
-    VBIC.vectlir9  = VBIC.base_addr + (VECTLIR9 * 2) + 1;
-    VBIC.vectlir10 = VBIC.base_addr + (VECTLIR10 * 2) + 1;
-    VBIC.vectvig   = VBIC.base_addr + (VECTVIG * 2) + 1;
-    VBIC.vectmsm   = VBIC.base_addr + (VECTMSM * 2) + 1;
-    VBIC.vectvme   = VBIC.base_addr + (VECTVME * 2) + 1;
-    VBIC.msmctl    = VBIC.base_addr + (MSMCTL * 2) + 1;
     return &VBIC;
+}
+
+/**
+ * Set the vector for the NMI switch.
+ */
+void VBICSetNMIVect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTNMI * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 1
+ */
+void VBICSetLIR1Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR1 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 2
+ */
+void VBICSetLIR2Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR2 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 3
+ */
+void VBICSetLIR3Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR3 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 4
+ */
+void VBICSetLIR4Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR4 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 5
+ */
+void VBICSetLIR5Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR5 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 6
+ */
+void VBICSetLIR6Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR6 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 7
+ */
+void VBICSetLIR7Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR7 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 8
+ */
+void VBICSetLIR8Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR8 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 9
+ */
+void VBICSetLIR9Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR9 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for local interrupter 10
+ */
+void VBICSetLIR10Vect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTLIR10 * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for VME Interrupt Generator
+ */
+void VBICSetVIGVect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTVIG * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for Millisecond Marker.
+ */
+void VBICSetMSMVect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTMSM * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * Set the vector for VME Interrupts.
+ *
+ * Lower 3 bits set by requesting VME IRQ (1-7).
+ */
+void VBICSetVMEVect(vbic_dev_t *dev, uint8_t vect)
+{
+    uint8_t * vectreg  = dev->base_addr + (VECTVME * 2) + 1;
+
+    *vectreg = vect;
+}
+
+/**
+ * IRMASKA Bits
+ *
+ */
+typedef enum
+{
+    MLIR1 = 0x02,
+    MLIR2 = 0x04,
+    MLIR3 = 0x08,
+    MLIR4 = 0x10,
+    MLIR5 = 0x20,
+    MLIR6 = 0x40,
+    MLIR7 = 0x80
+} irmaska_bits_t;
+
+/**
+ * Set IRMASKA Bits
+ *
+ */
+void VBICSetIRMASKABits(vbic_dev_t *dev, irmaska_bits_t bits)
+{
+    uint8_t * reg = dev->base_addr + (IRMASKA * 2) + 1;
+
+    *reg |= (uint8_t)bits;
+}
+
+/**
+ * Clear IRMASKA Bits
+ *
+ * @param mask Set bits to be cleared.
+ */
+void VBICClrIRMASKABits(vbic_dev_t *dev, irmaska_bits_t mask)
+{
+    uint8_t * reg = dev->base_addr + (IRMASKA * 2) + 1;
+
+    *reg &= ((uint8_t)mask) ^ ((uint8_t)0xFF);
+}
+
+/**
+ * IRMASKB Bits
+ *
+ */
+typedef enum
+{
+    MLIR8  = 0x01,
+    MLIR9  = 0x02,
+    MLIR10 = 0x04,
+    MMSM   = 0x40,
+    MVIG   = 0x80
+} irmaskb_bits_t;
+
+/**
+ * Set IRMASKB Bits
+ *
+ */
+void VBICSetIRMASKBBits(vbic_dev_t *dev,  irmaskb_bits_t bits)
+{
+    uint8_t * reg = dev->base_addr + (IRMASKB * 2) + 1;
+
+    *reg |= (uint8_t)bits;
+}
+
+/**
+ * Clear IRMASKB Bits
+ *
+ * @param mask Set bits to be cleared.
+ */
+void VBICClrIRMASKBBits(vbic_dev_t *dev, uint8_t mask)
+{
+    uint8_t * reg = dev->base_addr + (IRMASKB * 2) + 1;
+
+    *reg &= ((uint8_t)mask) ^ ((uint8_t)0xFF);
+}
+
+/**
+ * IRMASKC Bits
+ *
+ */
+typedef enum
+{
+    MVIR1 = 0x02,
+    MVIR2 = 0x04,
+    MVIR3 = 0x08,
+    MVIR4 = 0x10,
+    MVIR5 = 0x20,
+    MVIR6 = 0x40,
+    MVIR7 = 0x80
+} irmaskc_bits_t;
+
+/**
+ * Set IRMASKC Bits
+ *
+ */
+void VBICSetIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t bits)
+{
+    uint8_t * reg = dev->base_addr + (IRMASKC * 2) + 1;
+
+    *reg |= (uint8_t)bits;
+}
+
+/**
+ * Clear IRMASKC Bits
+ *
+ * @param mask Set bits to be cleared.
+ */
+void VBICClrIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t mask)
+{
+    uint8_t * reg = dev->base_addr + (IRMASKC * 2) + 1;
+
+    *reg &= ((uint8_t)mask) ^ ((uint8_t)0xFF);
+}
+
+/**
+ * ICLIRx Bits
+ *
+ */
+typedef enum
+{
+    ACT_HI = 0x10,
+    EDGE   = 0x20,
+    EXTV   = 0x40,
+    AUTOV  = 0x80
+} iclirx_bits_t;
+
+/**
+ * Set ICLIRx bits
+ */
+void VBICSetICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits)
+{
+    switch (which) {
+        case ICLIR1:
+        case ICLIR2:
+        case ICLIR3:
+        case ICLIR4:
+        case ICLIR5:
+        case ICLIR6:
+        case ICLIR7:
+        case ICLIR8:
+        case ICLIR9:
+        case ICLIR10:
+            {
+                uint8_t * reg = dev->base_addr + (which * 2) + 1;
+
+                *reg |= (uint8_t)bits;
+            };
+            break;
+        default:
+            return;
+    }
+}
+
+/**
+ * Clear ICLIRx bits
+ */
+void VBICClrICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits)
+{
+    switch (which) {
+        case ICLIR1:
+        case ICLIR2:
+        case ICLIR3:
+        case ICLIR4:
+        case ICLIR5:
+        case ICLIR6:
+        case ICLIR7:
+        case ICLIR8:
+        case ICLIR9:
+        case ICLIR10:
+            {
+                uint8_t * reg = dev->base_addr + (which * 2) + 1;
+
+                *reg &= ((uint8_t)bits) ^ ((uint8_t)0xFF);
+            };
+            break;
+        default:
+            return;
+    }
+}
+
+/**
+ * Set ICLIRx irq level
+ */
+void VBICSetICLIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
+{
+    switch (which) {
+        case ICLIR1:
+        case ICLIR2:
+        case ICLIR3:
+        case ICLIR4:
+        case ICLIR5:
+        case ICLIR6:
+        case ICLIR7:
+        case ICLIR8:
+        case ICLIR9:
+        case ICLIR10:
+            {
+                uint8_t * reg = dev->base_addr + (which * 2) + 1;
+
+                *reg &= (uint8_t)0xF8; // Clear the ILEV bits
+                *reg |= lvl; // Set the level
+            };
+            break;
+        default:
+            return;
+    }
 }
 
 /**
  * initMSM: Set up the millisecond marker timer
  *
  */
-void VBICInitMSM(vbic_dev_t *dev, irq_handler_t handler, irq_handler_t vec, uint8_t lvl) // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
+void VBICInitMSM(vbic_dev_t *dev, irq_handler_t handler, uint32_t vec, uint8_t lvl) // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
 {
     uint8_t * msmctl  = dev->base_addr + (MSMCTL * 2) + 1;
     uint8_t * icmsm   = dev->base_addr + (ICMSM * 2) + 1;
-    uint8_t * vectmsm = dev->base_addr + (VECTMSM * 2) + 1;
-    uint8_t * irmaskb = dev->base_addr + (IRMASKB * 2) + 1;
+    //uint8_t * vectmsm = dev->base_addr + (VECTMSM * 2) + 1;
+    //uint8_t * irmaskb = dev->base_addr + (IRMASKB * 2) + 1;
 
     *msmctl = 0x03; // Set freq to 1ms
     if (lvl > 7) lvl = 7;
     *icmsm = lvl; // Set interrupt level, between 1-7, 0 is disable.
-    *vectmsm = (uint32_t)(vec)/4;  // This is very unsafe!  It relies on pointers being 32bits.
+    VBICSetMSMVect(dev, (uint8_t)(vec/4));
+    //*vectmsm = (uint32_t)(vec)/4;  // This is very unsafe!  It relies on pointers being 32bits.
     *(uint32_t*)(vec) = (uint32_t)(handler);
-    *irmaskb |= 0x40; // unmask MSM irq.
+    //*irmaskb |= 0x40; // unmask MSM irq.
+    VBICSetIRMASKBBits(dev, MMSM | MVIG);
+    //VBICSetIRMASKBBits
 }
+/* vim: set ai expandtab ts=4 sts=4 sw=4: */

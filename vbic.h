@@ -80,30 +80,7 @@ void VBICSetMSMVect(vbic_dev_t *dev, uint8_t vect);
  */
 void VBICSetVMEVect(vbic_dev_t *dev, uint8_t vect);
 
-typedef enum 
-{
-    MLIR1,
-    MLIR2,
-    MLIR3,
-    MLIR4,
-    MLIR5,
-    MLIR6,
-    MLIR7,
-    MLIR8,
-    MLIR9,
-    MLIR10,
-    MMSM,
-    MVIG,
-    MVIR7,
-    MVIR6,
-    MVIR5,
-    MVIR4,
-    MVIR3,
-    MVIR2,
-    MVIR1,
-} vbic_irq_mask_t;
+void VBICInitMSM(vbic_dev_t *dev, irq_handler_t handler, uint32_t vec, uint8_t lvl); // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
 
-
-void VBICInitMSM(vbic_dev_t *dev, irq_handler_t handler, irq_handler_t vec, uint8_t lvl); // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
-
+/* vim: set ai expandtab ts=4 sts=4 sw=4: */
 #endif //__VBIC_H__

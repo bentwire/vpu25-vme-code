@@ -2,7 +2,7 @@ C_FILES = vpu25.c ascu2.c mc68230.c vbic.c
 O_FILES = $(patsubst %.c,%.o,$(C_FILES))
 D_FILES = $(patsubst %.c,%.d,$(C_FILES))
 
-GCCFLAGS = -Wall -m68010 -mtune=68020 #-g
+GCCFLAGS = -Wall -m68010 -mtune=68020 -O2 #-g
 GCCFLAGS += -MMD
 LDFLAGS = -T vpu25.ld -Xlinker -Map=vpu25.map
 
