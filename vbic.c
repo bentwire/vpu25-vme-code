@@ -77,9 +77,9 @@ typedef enum
     SYSCTL   = 0x4B,
 } vbic_reg_off_t;
 
-vbic_dev_t *VBICInit(uint8_t * vbic_base)
+vbic_dev_t *VBICInit(uintptr_t vbic_base)
 {
-    VBIC.base_addr = vbic_base;
+    VBIC.base_addr = (uint8_t *)vbic_base;
     return &VBIC;
 }
 
@@ -94,101 +94,15 @@ void VBICSetNMIVect(vbic_dev_t *dev, uint8_t vect)
 }
 
 /**
- * Set the vector for local interrupter 1
+ * Set the vector for local interrupter x
+ *
+ * @param lir which VECTLIR register to use.
+ *
+ * Argument checking performed upstream as this is an internal function.
  */
-void VBICSetLIR1Vect(vbic_dev_t *dev, uint8_t vect)
+void VBICSetLIRxVect(vbic_dev_t *dev, vbic_reg_off_t lir, uint8_t vect)
 {
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR1 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 2
- */
-void VBICSetLIR2Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR2 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 3
- */
-void VBICSetLIR3Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR3 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 4
- */
-void VBICSetLIR4Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR4 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 5
- */
-void VBICSetLIR5Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR5 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 6
- */
-void VBICSetLIR6Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR6 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 7
- */
-void VBICSetLIR7Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR7 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 8
- */
-void VBICSetLIR8Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR8 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 9
- */
-void VBICSetLIR9Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR9 * 2) + 1;
-
-    *vectreg = vect;
-}
-
-/**
- * Set the vector for local interrupter 10
- */
-void VBICSetLIR10Vect(vbic_dev_t *dev, uint8_t vect)
-{
-    uint8_t * vectreg  = dev->base_addr + (VECTLIR10 * 2) + 1;
+    uint8_t * vectreg  = dev->base_addr + (lir * 2) + 1;
 
     *vectreg = vect;
 }
@@ -368,6 +282,7 @@ void VBICSetICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits
             {
                 uint8_t * reg = dev->base_addr + (which * 2) + 1;
 
+                bits &= 0xF0; // Make sure the level does not get clobbered
                 *reg |= (uint8_t)bits;
             };
             break;
@@ -395,6 +310,7 @@ void VBICClrICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits
             {
                 uint8_t * reg = dev->base_addr + (which * 2) + 1;
 
+                bits &= 0xF0; // Make sure the level does not get clobbered
                 *reg &= ((uint8_t)bits) ^ ((uint8_t)0xFF);
             };
             break;
@@ -432,24 +348,61 @@ void VBICSetICLIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
 }
 
 /**
+ * Set ICVIRx irq level
+ *
+ * Argument checking performed upstream as this is an internal function.
+ */
+void VBICSetICVIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
+{
+    uint8_t * reg = dev->base_addr + (which * 2) + 1;
+
+    *reg &= (uint8_t)0xF8; // Clear the ILEV bits
+    *reg |= lvl; // Set the level
+}
+
+/**
+ * Set ICVIG irq level
+ *
+ * Argument checking performed upstream as this is an internal function.
+ */
+void VBICSetICVIGLevel(vbic_dev_t *dev, uint8_t lvl)
+{
+    uint8_t * reg = dev->base_addr + (ICVIG * 2) + 1;
+
+    *reg &= (uint8_t)0xF8; // Clear the ILEV bits
+    *reg |= lvl; // Set the level
+}
+
+/**
+ * Set ICMSM irq level
+ *
+ * Argument checking performed upstream as this is an internal function.
+ */
+void VBICSetICMSMLevel(vbic_dev_t *dev, uint8_t lvl)
+{
+    uint8_t * reg = dev->base_addr + (ICMSM * 2) + 1;
+
+    *reg &= (uint8_t)0xF8; // Clear the ILEV bits
+    *reg |= lvl; // Set the level
+}
+
+/**
  * initMSM: Set up the millisecond marker timer
  *
  */
-void VBICInitMSM(vbic_dev_t *dev, irq_handler_t handler, uint32_t vec, uint8_t lvl) // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
+void VBICConfigMSM(vbic_dev_t *dev, irq_handler_t handler, uint32_t vec, uint8_t lvl) // This sets the MSM to 1ms interrupts, we could use 10 I suppose but 1 and 10 are the only choices...
 {
     uint8_t * msmctl  = dev->base_addr + (MSMCTL * 2) + 1;
-    uint8_t * icmsm   = dev->base_addr + (ICMSM * 2) + 1;
-    //uint8_t * vectmsm = dev->base_addr + (VECTMSM * 2) + 1;
-    //uint8_t * irmaskb = dev->base_addr + (IRMASKB * 2) + 1;
 
     *msmctl = 0x03; // Set freq to 1ms
+
     if (lvl > 7) lvl = 7;
-    *icmsm = lvl; // Set interrupt level, between 1-7, 0 is disable.
+
+    VBICSetICMSMLevel(dev, lvl); // Set interrupt level, between 1-7, 0 is disable.
     VBICSetMSMVect(dev, (uint8_t)(vec/4));
-    //*vectmsm = (uint32_t)(vec)/4;  // This is very unsafe!  It relies on pointers being 32bits.
+
     *(uint32_t*)(vec) = (uint32_t)(handler);
-    //*irmaskb |= 0x40; // unmask MSM irq.
-    VBICSetIRMASKBBits(dev, MMSM | MVIG);
-    //VBICSetIRMASKBBits
+
+    VBICSetIRMASKBBits(dev, MMSM);
 }
 /* vim: set ai expandtab ts=4 sts=4 sw=4: */

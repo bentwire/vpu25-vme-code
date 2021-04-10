@@ -105,7 +105,7 @@ int main(void)
         VACSv1SetForAddress(vme32offs, false, false, false);
     }
 
-    vbic = VBICInit((uint8_t *)0xfff90000);
+    vbic = VBICInit(0xfff90000);
     BoardInitPIT();
     BoardSetVMEBusReqLvl(0);                       // Bus req level 0
     BoardSetVMEBusRelMethod(VME_BUS_BR_ROR);       // Release on request.
@@ -114,7 +114,7 @@ int main(void)
     //setVMEBusArbMethod(VME_BUS_ARB_PRI);     // Priority, br3 is highest prio, followed by 2,1,0.
     //setVMEBusTimeout(VME_BUS_TIMEOUT_16US);  // 128us Timeout.
 
-    VBICInitMSM(vbic, timer_isr, 0x100, 2);
+    VBICConfigMSM(vbic, timer_isr, 0x100, 2);
 
     BoardDeAssertSysFail();
 
