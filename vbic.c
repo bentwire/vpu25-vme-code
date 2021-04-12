@@ -86,7 +86,7 @@ vbic_dev_t *VBICInit(uintptr_t vbic_base)
 /**
  * Set the vector for the NMI switch.
  */
-void VBICSetNMIVect(vbic_dev_t *dev, uint8_t vect)
+static void VBICSetNMIVect(vbic_dev_t *dev, uint8_t vect)
 {
     uint8_t * vectreg  = dev->base_addr + (VECTNMI * 2) + 1;
 
@@ -100,7 +100,7 @@ void VBICSetNMIVect(vbic_dev_t *dev, uint8_t vect)
  *
  * Argument checking performed upstream as this is an internal function.
  */
-void VBICSetLIRxVect(vbic_dev_t *dev, vbic_reg_off_t lir, uint8_t vect)
+static void VBICSetLIRxVect(vbic_dev_t *dev, vbic_reg_off_t lir, uint8_t vect)
 {
     uint8_t * vectreg  = dev->base_addr + (lir * 2) + 1;
 
@@ -110,7 +110,7 @@ void VBICSetLIRxVect(vbic_dev_t *dev, vbic_reg_off_t lir, uint8_t vect)
 /**
  * Set the vector for VME Interrupt Generator
  */
-void VBICSetVIGVect(vbic_dev_t *dev, uint8_t vect)
+static void VBICSetVIGVect(vbic_dev_t *dev, uint8_t vect)
 {
     uint8_t * vectreg  = dev->base_addr + (VECTVIG * 2) + 1;
 
@@ -120,7 +120,7 @@ void VBICSetVIGVect(vbic_dev_t *dev, uint8_t vect)
 /**
  * Set the vector for Millisecond Marker.
  */
-void VBICSetMSMVect(vbic_dev_t *dev, uint8_t vect)
+static void VBICSetMSMVect(vbic_dev_t *dev, uint8_t vect)
 {
     uint8_t * vectreg  = dev->base_addr + (VECTMSM * 2) + 1;
 
@@ -132,7 +132,7 @@ void VBICSetMSMVect(vbic_dev_t *dev, uint8_t vect)
  *
  * Lower 3 bits set by requesting VME IRQ (1-7).
  */
-void VBICSetVMEVect(vbic_dev_t *dev, uint8_t vect)
+static void VBICSetVMEVect(vbic_dev_t *dev, uint8_t vect)
 {
     uint8_t * vectreg  = dev->base_addr + (VECTVME * 2) + 1;
 
@@ -158,7 +158,7 @@ typedef enum
  * Set IRMASKA Bits
  *
  */
-void VBICSetIRMASKABits(vbic_dev_t *dev, irmaska_bits_t bits)
+static void VBICSetIRMASKABits(vbic_dev_t *dev, irmaska_bits_t bits)
 {
     uint8_t * reg = dev->base_addr + (IRMASKA * 2) + 1;
 
@@ -170,7 +170,7 @@ void VBICSetIRMASKABits(vbic_dev_t *dev, irmaska_bits_t bits)
  *
  * @param mask Set bits to be cleared.
  */
-void VBICClrIRMASKABits(vbic_dev_t *dev, irmaska_bits_t mask)
+static void VBICClrIRMASKABits(vbic_dev_t *dev, irmaska_bits_t mask)
 {
     uint8_t * reg = dev->base_addr + (IRMASKA * 2) + 1;
 
@@ -194,7 +194,7 @@ typedef enum
  * Set IRMASKB Bits
  *
  */
-void VBICSetIRMASKBBits(vbic_dev_t *dev,  irmaskb_bits_t bits)
+static void VBICSetIRMASKBBits(vbic_dev_t *dev,  irmaskb_bits_t bits)
 {
     uint8_t * reg = dev->base_addr + (IRMASKB * 2) + 1;
 
@@ -206,7 +206,7 @@ void VBICSetIRMASKBBits(vbic_dev_t *dev,  irmaskb_bits_t bits)
  *
  * @param mask Set bits to be cleared.
  */
-void VBICClrIRMASKBBits(vbic_dev_t *dev, uint8_t mask)
+static void VBICClrIRMASKBBits(vbic_dev_t *dev, uint8_t mask)
 {
     uint8_t * reg = dev->base_addr + (IRMASKB * 2) + 1;
 
@@ -232,7 +232,7 @@ typedef enum
  * Set IRMASKC Bits
  *
  */
-void VBICSetIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t bits)
+static void VBICSetIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t bits)
 {
     uint8_t * reg = dev->base_addr + (IRMASKC * 2) + 1;
 
@@ -244,9 +244,32 @@ void VBICSetIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t bits)
  *
  * @param mask Set bits to be cleared.
  */
-void VBICClrIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t mask)
+static void VBICClrIRMASKCBits(vbic_dev_t *dev, irmaskc_bits_t mask)
 {
     uint8_t * reg = dev->base_addr + (IRMASKC * 2) + 1;
+
+    *reg &= ((uint8_t)mask) ^ ((uint8_t)0xFF);
+}
+
+/**
+ * Set IRMASKx Bits
+ *
+ */
+static void VBICSetIRMASKxBits(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t bits)
+{
+    uint8_t * reg = dev->base_addr + (which * 2) + 1;
+
+    *reg |= bits;
+}
+
+/**
+ * Clear IRMASKx Bits
+ *
+ * @param mask Set bits to be cleared.
+ */
+static void VBICClrIRMASKxBits(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t mask)
+{
+    uint8_t * reg = dev->base_addr + (which * 2) + 1;
 
     *reg &= ((uint8_t)mask) ^ ((uint8_t)0xFF);
 }
@@ -266,7 +289,7 @@ typedef enum
 /**
  * Set ICLIRx bits
  */
-void VBICSetICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits)
+static void VBICSetICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits)
 {
     switch (which) {
         case ICLIR1:
@@ -294,7 +317,7 @@ void VBICSetICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits
 /**
  * Clear ICLIRx bits
  */
-void VBICClrICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits)
+static void VBICClrICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits)
 {
     switch (which) {
         case ICLIR1:
@@ -322,7 +345,7 @@ void VBICClrICLIRxBits(vbic_dev_t *dev, vbic_reg_off_t which, iclirx_bits_t bits
 /**
  * Set ICLIRx irq level
  */
-void VBICSetICLIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
+static void VBICSetICLIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
 {
     switch (which) {
         case ICLIR1:
@@ -352,7 +375,7 @@ void VBICSetICLIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
  *
  * Argument checking performed upstream as this is an internal function.
  */
-void VBICSetICVIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
+static void VBICSetICVIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
 {
     uint8_t * reg = dev->base_addr + (which * 2) + 1;
 
@@ -365,7 +388,7 @@ void VBICSetICVIRxLevel(vbic_dev_t *dev, vbic_reg_off_t which, uint8_t lvl)
  *
  * Argument checking performed upstream as this is an internal function.
  */
-void VBICSetICVIGLevel(vbic_dev_t *dev, uint8_t lvl)
+static void VBICSetICVIGLevel(vbic_dev_t *dev, uint8_t lvl)
 {
     uint8_t * reg = dev->base_addr + (ICVIG * 2) + 1;
 
@@ -378,7 +401,7 @@ void VBICSetICVIGLevel(vbic_dev_t *dev, uint8_t lvl)
  *
  * Argument checking performed upstream as this is an internal function.
  */
-void VBICSetICMSMLevel(vbic_dev_t *dev, uint8_t lvl)
+static void VBICSetICMSMLevel(vbic_dev_t *dev, uint8_t lvl)
 {
     uint8_t * reg = dev->base_addr + (ICMSM * 2) + 1;
 
@@ -405,4 +428,281 @@ void VBICConfigMSM(vbic_dev_t *dev, irq_handler_t handler, uint32_t vec, uint8_t
 
     VBICSetIRMASKBBits(dev, MMSM);
 }
+
+// TODO: Add Enable/DisableMSM
+
+/**
+ * Configure the NMI switch.
+ */
+void VBICConfigNMISwitch(vbic_dev_t *dev, irq_handler_t handler, uintptr_t vec)
+{
+    VBICSetNMIVect(dev, (uint8_t)(vec/4));
+
+    *(uintptr_t*)(vec) = (uint32_t)(handler);
+}
+
+/**
+ * Configure one of the local interrupters
+ */
+void VBICConfigLocalInt(vbic_dev_t *dev, lir_t which, irq_handler_t handler, uintptr_t vec, uint8_t lvl, bool isAuto, bool isExt, bool isEdge, bool isActHi)
+{
+    vbic_reg_off_t lirReg = 0;
+    vbic_reg_off_t vectReg = 0;
+    iclirx_bits_t iclirBits = 0;
+
+    if (lvl > 7)
+        lvl = 7;
+
+    if (isAuto) iclirBits |= AUTOV;
+    if (isExt) iclirBits |= EXTV;
+    if (isEdge) iclirBits |= EDGE;
+    if (isActHi) iclirBits |= ACT_HI;
+
+    switch (which)
+    {
+        case LOCAL_INTERRUPTER_1:
+            lirReg = ICLIR1;
+            vectReg = VECTLIR1;
+            break;
+        case LOCAL_INTERRUPTER_2:
+            lirReg = ICLIR2;
+            vectReg = VECTLIR2;
+            break;
+        case LOCAL_INTERRUPTER_3:
+            lirReg = ICLIR3;
+            vectReg = VECTLIR3;
+            break;
+        case LOCAL_INTERRUPTER_4:
+            lirReg = ICLIR4;
+            vectReg = VECTLIR4;
+            break;
+        case LOCAL_INTERRUPTER_5:
+            lirReg = ICLIR5;
+            vectReg = VECTLIR5;
+            break;
+        case LOCAL_INTERRUPTER_6:
+            lirReg = ICLIR6;
+            vectReg = VECTLIR6;
+            break;
+        case LOCAL_INTERRUPTER_7:
+            lirReg = ICLIR7;
+            vectReg = VECTLIR7;
+            break;
+        case LOCAL_INTERRUPTER_8:
+            lirReg = ICLIR8;
+            vectReg = VECTLIR8;
+            break;
+        case LOCAL_INTERRUPTER_9:
+            lirReg = ICLIR9;
+            vectReg = VECTLIR9;
+            break;
+        case LOCAL_INTERRUPTER_10:
+            lirReg = ICLIR10;
+            vectReg = VECTLIR10;
+            break;
+    }
+
+    if ((lirReg != 0) && (vectReg != 0))
+    {
+        *(uintptr_t*)(vec) = (uint32_t)(handler);
+
+        VBICClrICLIRxBits(dev, lirReg, 0xF0);
+        VBICSetICLIRxBits(dev, lirReg, iclirBits);
+        VBICSetICLIRxLevel(dev, lirReg, lvl);
+        VBICSetLIRxVect(dev, vectReg, (uint8_t)(vec/4));
+    }
+}
+
+// TODO: Add Enable/DisableLocalInt
+/**
+ * Configure one of the local interrupters
+ */
+void VBICEnableLocalInt(vbic_dev_t *dev, lir_t which)
+{
+    switch (which)
+    {
+        case LOCAL_INTERRUPTER_1:
+            VBICSetIRMASKABits(dev, MLIR1);
+            break;
+        case LOCAL_INTERRUPTER_2:
+            VBICSetIRMASKABits(dev, MLIR2);
+            break;
+        case LOCAL_INTERRUPTER_3:
+            VBICSetIRMASKABits(dev, MLIR3);
+            break;
+        case LOCAL_INTERRUPTER_4:
+            VBICSetIRMASKABits(dev, MLIR4);
+            break;
+        case LOCAL_INTERRUPTER_5:
+            VBICSetIRMASKABits(dev, MLIR5);
+            break;
+        case LOCAL_INTERRUPTER_6:
+            VBICSetIRMASKABits(dev, MLIR6);
+            break;
+        case LOCAL_INTERRUPTER_7:
+            VBICSetIRMASKABits(dev, MLIR7);
+            break;
+        case LOCAL_INTERRUPTER_8:
+            VBICSetIRMASKBBits(dev, MLIR8);
+            break;
+        case LOCAL_INTERRUPTER_9:
+            VBICSetIRMASKBBits(dev, MLIR9);
+            break;
+        case LOCAL_INTERRUPTER_10:
+            VBICSetIRMASKBBits(dev, MLIR10);
+            break;
+    }
+}
+
+/**
+ * Configure one of the local interrupters
+ */
+void VBICDisbleLocalInt(vbic_dev_t *dev, lir_t which)
+{
+    switch (which)
+    {
+        case LOCAL_INTERRUPTER_1:
+            VBICClrIRMASKABits(dev, MLIR1);
+            break;
+        case LOCAL_INTERRUPTER_2:
+            VBICClrIRMASKABits(dev, MLIR2);
+            break;
+        case LOCAL_INTERRUPTER_3:
+            VBICClrIRMASKABits(dev, MLIR3);
+            break;
+        case LOCAL_INTERRUPTER_4:
+            VBICClrIRMASKABits(dev, MLIR4);
+            break;
+        case LOCAL_INTERRUPTER_5:
+            VBICClrIRMASKABits(dev, MLIR5);
+            break;
+        case LOCAL_INTERRUPTER_6:
+            VBICClrIRMASKABits(dev, MLIR6);
+            break;
+        case LOCAL_INTERRUPTER_7:
+            VBICClrIRMASKABits(dev, MLIR7);
+            break;
+        case LOCAL_INTERRUPTER_8:
+            VBICClrIRMASKBBits(dev, MLIR8);
+            break;
+        case LOCAL_INTERRUPTER_9:
+            VBICClrIRMASKBBits(dev, MLIR9);
+            break;
+        case LOCAL_INTERRUPTER_10:
+            VBICClrIRMASKBBits(dev, MLIR10);
+            break;
+    }
+}
+
+/**
+ * Configure one of the VME interrupters
+ 
+ * NOTE:  There is only one vector register for all VME interrupts, This means all the vectors are in a block of 8 and there
+ * can only be one vector address for the block.  The last 3 bits are masked off because of this.
+ *
+ */
+void VBICConfigVMEInt(vbic_dev_t *dev, vir_t which, irq_handler_t handler, uintptr_t vec, uint8_t lvl)
+{
+    vbic_reg_off_t virReg = 0;
+
+    if (lvl > 7)
+        lvl = 7;
+
+    switch (which)
+    {
+        case VME_INTERRUPTER_1:
+            virReg = ICVIR1;
+            break;
+        case VME_INTERRUPTER_2:
+            virReg = ICVIR2;
+            break;
+        case VME_INTERRUPTER_3:
+            virReg = ICVIR3;
+            break;
+        case VME_INTERRUPTER_4:
+            virReg = ICVIR4;
+            break;
+        case VME_INTERRUPTER_5:
+            virReg = ICVIR5;
+            break;
+        case VME_INTERRUPTER_6:
+            virReg = ICVIR6;
+            break;
+        case VME_INTERRUPTER_7:
+            virReg = ICVIR7;
+            break;
+    }
+
+    if ((virReg != 0))
+    {
+        *(uintptr_t*)(vec) = (uint32_t)(handler);
+
+        VBICSetICVIRxLevel(dev, virReg, lvl);
+        VBICSetVMEVect(dev, (uint8_t)(vec/4) & 0xF8);
+    }
+}
+
+// TODO: Add Enable/DisableVMEInt
+/**
+ * Configure one of the VME interrupters
+ */
+void VBICEnableVMEInt(vbic_dev_t *dev, vir_t which)
+{
+    switch (which)
+    {
+        case VME_INTERRUPTER_1:
+            VBICSetIRMASKCBits(dev, MVIR1);
+            break;
+        case VME_INTERRUPTER_2:
+            VBICSetIRMASKCBits(dev, MVIR2);
+            break;
+        case VME_INTERRUPTER_3:
+            VBICSetIRMASKCBits(dev, MVIR3);
+            break;
+        case VME_INTERRUPTER_4:
+            VBICSetIRMASKCBits(dev, MVIR4);
+            break;
+        case VME_INTERRUPTER_5:
+            VBICSetIRMASKCBits(dev, MVIR5);
+            break;
+        case VME_INTERRUPTER_6:
+            VBICSetIRMASKCBits(dev, MVIR6);
+            break;
+        case VME_INTERRUPTER_7:
+            VBICSetIRMASKCBits(dev, MVIR7);
+            break;
+    }
+}
+
+/**
+ * Configure one of the VME interrupters
+ */
+void VBICDisbleVMEInt(vbic_dev_t *dev, vir_t which)
+{
+    switch (which)
+    {
+        case VME_INTERRUPTER_1:
+            VBICClrIRMASKCBits(dev, MVIR1);
+            break;
+        case VME_INTERRUPTER_2:
+            VBICClrIRMASKCBits(dev, MVIR2);
+            break;
+        case VME_INTERRUPTER_3:
+            VBICClrIRMASKCBits(dev, MVIR3);
+            break;
+        case VME_INTERRUPTER_4:
+            VBICClrIRMASKCBits(dev, MVIR4);
+            break;
+        case VME_INTERRUPTER_5:
+            VBICClrIRMASKCBits(dev, MVIR5);
+            break;
+        case VME_INTERRUPTER_6:
+            VBICClrIRMASKCBits(dev, MVIR6);
+            break;
+        case VME_INTERRUPTER_7:
+            VBICClrIRMASKCBits(dev, MVIR7);
+            break;
+    }
+}
+
 /* vim: set ai expandtab ts=4 sts=4 sw=4: */

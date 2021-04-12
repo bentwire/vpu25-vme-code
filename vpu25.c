@@ -35,6 +35,11 @@ __attribute__ ((interrupt)) void timer_isr(uint16_t vect)
     VPU25SetBoardLEDs(vmecntr[0] >> 6);
 }
 
+__attribute__ ((interrupt)) void vme_isr(uint16_t vect)
+{
+    printf("VME: %d\n", vect);
+}
+
 static void sleepms(uint32_t ms)
 {
     counter = ms;
@@ -96,7 +101,7 @@ int main(void)
     printf("HI\n");
 
     uint8_t * vme32start = (uint8_t *)(0x10000000);
-    uint8_t * vme32end = (uint8_t *)(0xBFFF0000);
+    uint8_t * vme32end = (uint8_t *)(0xF0F00000);
     uint8_t * vme32offs;
 
     for (vme32offs = vme32start; vme32offs < vme32end; vme32offs += (uint32_t)0x00100000)
@@ -115,6 +120,18 @@ int main(void)
     //setVMEBusTimeout(VME_BUS_TIMEOUT_16US);  // 128us Timeout.
 
     VBICConfigMSM(vbic, timer_isr, 0x100, 2);
+
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_1, vme_isr, 0x158, 1);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_2, vme_isr, 0x158, 2);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_3, vme_isr, 0x158, 3);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_4, vme_isr, 0x158, 4);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_5, vme_isr, 0x158, 5);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_6, vme_isr, 0x158, 6);
+
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_1);
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_2);
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_3);
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_4);
 
     BoardDeAssertSysFail();
 

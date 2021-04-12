@@ -58,11 +58,15 @@ void VBICConfigNMISwitch(vbic_dev_t *dev, irq_handler_t handler, uintptr_t vec);
  * Configure one of the local interrupters
  */
 void VBICConfigLocalInt(vbic_dev_t *dev, lir_t which, irq_handler_t handler, uintptr_t vec, uint8_t lvl, bool isAuto, bool isExt, bool isEdge, bool isActHi);
+void VBICEnableLocalInt(vbic_dev_t *dev, lir_t which);
+void VBICDisableLocalInt(vbic_dev_t *dev, lir_t which);
 
 /**
  * Configure one of the VME interrupters
  */
 void VBICConfigVMEInt(vbic_dev_t *dev, vir_t which, irq_handler_t handler, uintptr_t vec, uint8_t lvl);
+void VBICEnableVMEInt(vbic_dev_t *dev, vir_t which);
+void VBICDisableVMEInt(vbic_dev_t *dev, vir_t which);
 
 /* vim: set ai expandtab ts=4 sts=4 sw=4: */
 #endif //__VBIC_H__
