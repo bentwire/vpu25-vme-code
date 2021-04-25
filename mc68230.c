@@ -1,5 +1,10 @@
 #include "mc68230.h"
 
+typedef struct _mc68230_dev_t
+{
+    uint8_t *addr;  // PI/T base address.
+} mc68230_dev_t;
+
 typedef enum 
 {
     PGCR = 0,
@@ -29,13 +34,25 @@ typedef enum
     TSR,
 } mc68230_reg_off_t;
 
+#ifndef MC68230_MAX_DEV
+#define MC68230_MAX_DEV 16
+#endif
+
+static mc68230_dev_t DEVS[MC68230_MAX_DEV];
+static uint32_t devs = 0;
 /**
  * brief: Initialize PI/T pointed to by dev.
  *
  * Only touches regs affected by reset.
  */
-void MC68230Init(mc68230_dev_t *dev)
+mc68230_dev_t * MC68230Init(uint8_t * base)
 {
+    if (devs >= MC68230_MAX_DEV) return NULL;
+
+    mc68230_dev_t * dev = &DEVS[devs++];
+
+    dev->addr = base;
+
     MC68230SetPGCR(dev, 0);
     MC68230SetPSRR(dev, 0);
     MC68230SetPADDR(dev, 0);
@@ -47,6 +64,8 @@ void MC68230Init(mc68230_dev_t *dev)
     MC68230SetTCR(dev, 0);
     MC68230SetTIVR(dev, 0x0F); 
     MC68230SetTSR(dev, 0x01); // This is a reset operation. Writing this insures a value of 0x00 in the register.
+
+    return dev;
 }
 
 /******** Port Section **********************************/
@@ -472,3 +491,4 @@ uint8_t MC68230GetTSR(mc68230_dev_t *dev)
 
     return val;
 }
+/* vim: set ai expandtab ts=4 sts=4 sw=4: */

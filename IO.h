@@ -8,14 +8,14 @@
  *
  * This is set in the linker script.
  */
-extern uint8_t __vme16_start;
+extern uint8_t __vme16_start[];
 
 /**
  * This is at the address where vme32 space starts
  *
  * This is set in the linker script.
  */
-extern uint8_t __vme32_start;
+extern uint8_t __vme32_start[];
 
 static inline void copy_to_io8(uint8_t val, uint8_t *addr)
 {

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "vbic.h"
 
 struct _vbic_dev_t
@@ -5,7 +6,14 @@ struct _vbic_dev_t
     uint8_t * base_addr;
 };
 
+#ifndef VBIC_VME_BASE_VEC
+#define VBIC_VME_BASE_VEC 0x3F0
+#endif
+
 static vbic_dev_t VBIC; // There is only ever 1 VBIC.
+static vme_irq_handler_t vme_handlers[256] = { NULL }; // The VME interrupt ID is 8 bits on this system.  This allows for 256 interrupt "IDs"
+
+static void VBICInitVMEInts(vbic_dev_t *dev, irq_handler_t handler, uintptr_t vec);
 
 typedef enum
 {
@@ -77,9 +85,48 @@ typedef enum
     SYSCTL   = 0x4B,
 } vbic_reg_off_t;
 
+__attribute__ ((interrupt))
+static void vbic_vme_handler(uint16_t vec)
+{
+    uint8_t id;
+    uint8_t irq;
+    uint8_t virscan;
+    uint8_t virmask;
+    uint8_t virirqs;
+
+    virscan = *(VBIC.base_addr + (IRSCANC * 2) + 1);
+    virmask = *(VBIC.base_addr + (IRMASKC * 2) + 1);
+    virirqs = virscan & virmask; // Make sure we only use the enabled IRQ's.
+
+    for (int shift = 0; shift < 7; shift++)
+    {
+        // We are going to arbitrarily say that VME IRQ 7 is of the highest priority.
+        if (((virirqs << shift) & 0x80) == 0x80) // IRQ Fired, read ID from appropriate register
+        {
+            // Determine which VME IRQ and ID Fired
+            irq = 7 - shift;
+            id  = *(VBIC.base_addr + ((VIRSID1 + (irq - 1)) * 2) + 1);
+
+            // Use the ID to get the handler address
+            vme_irq_handler_t handler = vme_handlers[id];
+            if (handler != NULL)
+            {
+                // Call the user handler with the vec and id
+                handler(vec, id);
+            }
+            else
+            {
+                printf("SPURRIOUS VME INT: VEC: 0x%4.4x, IRQ: %d, ID: 0x%2.2x\n", vec, irq, id); 
+            }
+        }
+    }
+}
+
 vbic_dev_t *VBICInit(uintptr_t vbic_base)
 {
     VBIC.base_addr = (uint8_t *)vbic_base;
+
+    VBICInitVMEInts(&VBIC, vbic_vme_handler, VBIC_VME_BASE_VEC);
     return &VBIC;
 }
 
@@ -594,14 +641,18 @@ void VBICDisbleLocalInt(vbic_dev_t *dev, lir_t which)
     }
 }
 
+static void VBICInitVMEInts(vbic_dev_t *dev, irq_handler_t handler, uintptr_t vec)
+{
+    *(uintptr_t*)(vec) = (uint32_t)(handler);
+
+    VBICSetVMEVect(dev, (uint8_t)(vec/4) & 0xF8);
+}
+
 /**
  * Configure one of the VME interrupters
- 
- * NOTE:  There is only one vector register for all VME interrupts, This means all the vectors are in a block of 8 and there
- * can only be one vector address for the block.  The last 3 bits are masked off because of this.
  *
  */
-void VBICConfigVMEInt(vbic_dev_t *dev, vir_t which, irq_handler_t handler, uintptr_t vec, uint8_t lvl)
+void VBICConfigVMEInt(vbic_dev_t *dev, vir_t which, vme_irq_handler_t handler, uint8_t id, uint8_t lvl)
 {
     vbic_reg_off_t virReg = 0;
 
@@ -635,14 +686,13 @@ void VBICConfigVMEInt(vbic_dev_t *dev, vir_t which, irq_handler_t handler, uintp
 
     if ((virReg != 0))
     {
-        *(uintptr_t*)(vec) = (uint32_t)(handler);
+        VBICDisableVMEInt(dev, which);
+        vme_handlers[id] = handler;
 
         VBICSetICVIRxLevel(dev, virReg, lvl);
-        VBICSetVMEVect(dev, (uint8_t)(vec/4) & 0xF8);
     }
 }
 
-// TODO: Add Enable/DisableVMEInt
 /**
  * Configure one of the VME interrupters
  */
@@ -677,7 +727,7 @@ void VBICEnableVMEInt(vbic_dev_t *dev, vir_t which)
 /**
  * Configure one of the VME interrupters
  */
-void VBICDisbleVMEInt(vbic_dev_t *dev, vir_t which)
+void VBICDisableVMEInt(vbic_dev_t *dev, vir_t which)
 {
     switch (which)
     {

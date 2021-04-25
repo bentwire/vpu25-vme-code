@@ -6,10 +6,7 @@
 
 #include "IO.h"
 
-typedef struct
-{
-    uint8_t *addr;  // PI/T base address.
-} mc68230_dev_t;
+typedef struct _mc68230_dev_t mc68230_dev_t;
 
 /**
  * brief: Initialize PI/T pointed to by dev.
@@ -18,7 +15,7 @@ typedef struct
  * Initializes all port data regs to 0x00.
  *
  */
-void MC68230Init(mc68230_dev_t *dev);
+mc68230_dev_t * MC68230Init(uint8_t * base);
 
 /******** Port Section **********************************/
 
@@ -209,3 +206,4 @@ void MC68230SetTSR(mc68230_dev_t *dev, uint8_t  val);
 uint8_t MC68230GetTSR(mc68230_dev_t *dev);
 
 #endif // __MC68230_H__
+/* vim: set ai expandtab ts=4 sts=4 sw=4: */

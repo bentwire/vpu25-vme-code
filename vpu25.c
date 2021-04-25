@@ -14,13 +14,16 @@ static volatile uint32_t         ticker  = 0;
 static volatile uint32_t         counter = 0;
 static volatile uint32_t * const vmecntr = (uint32_t *)(0x10000000); // In the 256M ram card.
 
-static vbic_dev_t *vbic;
+uint8_t * const ascu2_addr     = __vme16_start + 0xF000;
 
-static mc68230_dev_t pit; // The PIT controls the LEDs, the dip switches, the interrupts from the 2 IP slots, and a status reg.
+static vbic_dev_t    * vbic;
+static mc68230_dev_t * pit;   // The PIT controls the LEDs, the dip switches, the interrupts from the 2 IP slots, and a status reg.
+
+static ascu2_dev_t   * ascu2; // VME Card Slot 1, System controller, also serial, GPIB and centronics interface with VIG.
 
 void VPU25SetBoardLEDs(uint8_t val)
 {
-    MC68230SetPBDR(&pit, val ^ 0xFF); // LEDs states are inverted.
+    MC68230SetPBDR(pit, val ^ 0xFF); // LEDs states are inverted.
 }
 
 __attribute__ ((interrupt)) void timer_isr(uint16_t vect)
@@ -35,9 +38,9 @@ __attribute__ ((interrupt)) void timer_isr(uint16_t vect)
     VPU25SetBoardLEDs(vmecntr[0] >> 6);
 }
 
-__attribute__ ((interrupt)) void vme_isr(uint16_t vect)
+__attribute__ ((interrupt)) void vme_isr(uint16_t vect, uint8_t id)
 {
-    printf("VME: %d\n", vect);
+    printf("VME: 0x%4.4x 0x%2.2x\n", vect, id);
 }
 
 static void sleepms(uint32_t ms)
@@ -48,33 +51,32 @@ static void sleepms(uint32_t ms)
 
 static void BoardInitPIT()
 {
-    pit.addr = PIT;
+    pit = MC68230Init(PIT);
 
-    MC68230Init(&pit);
-    MC68230SetPGCR(&pit, 0x00);  // Port A and B in mode 0
-    MC68230SetPSRR(&pit, 0x18);  // Port C, set to general IO, bit 6, 5 are PIT functions
+    MC68230SetPGCR(pit, 0x00);  // Port A and B in mode 0
+    MC68230SetPSRR(pit, 0x18);  // Port C, set to general IO, bit 6, 5 are PIT functions
                                  // Int IP-A (H1) has priority over IP-B (H2).
-    MC68230SetPBDR(&pit, 0xFF);  // LED's are off when set to 1
-    MC68230SetPCDR(&pit, 0x96);  // Bus error status bits and parity error status bits are
+    MC68230SetPBDR(pit, 0xFF);  // LED's are off when set to 1
+    MC68230SetPCDR(pit, 0x96);  // Bus error status bits and parity error status bits are
                                  // reset and disabled, SYSFAIL asserted.
-    MC68230SetPADDR(&pit, 0x00); // Port A is set to all inputs for the 8 switches.
-    MC68230SetPBDDR(&pit, 0xFF); // Port B is set to all outputs for the 8 LEDs.
-    MC68230SetPCDDR(&pit, 0x97); // Port C bits 7, 4, 2, 1, 0 are outputs, 6, 5, 3 are inputs.
-    MC68230SetPACR(&pit, 0x86);  // Port A in submode 1x, making H1 and H2 lines to IP-A and IP-B ints.
-    MC68230SetPBCR(&pit, 0x80);  // Port B in submode 1x, H3 and H4 are disabled.
-    MC68230SetTCR(&pit, 0xC0);   // Timer off. Port C bit 3 configured as timer int req (autovec)
+    MC68230SetPADDR(pit, 0x00); // Port A is set to all inputs for the 8 switches.
+    MC68230SetPBDDR(pit, 0xFF); // Port B is set to all outputs for the 8 LEDs.
+    MC68230SetPCDDR(pit, 0x97); // Port C bits 7, 4, 2, 1, 0 are outputs, 6, 5, 3 are inputs.
+    MC68230SetPACR(pit, 0x86);  // Port A in submode 1x, making H1 and H2 lines to IP-A and IP-B ints.
+    MC68230SetPBCR(pit, 0x80);  // Port B in submode 1x, H3 and H4 are disabled.
+    MC68230SetTCR(pit, 0xC0);   // Timer off. Port C bit 3 configured as timer int req (autovec)
 
-    MC68230SetPCDR(&pit, MC68230GetPCDR(&pit) | 0x80);  // Insure parity test is disabled.
+    MC68230SetPCDR(pit, MC68230GetPCDR(pit) | 0x80);  // Insure parity test is disabled.
 }
 
 void BoardDeAssertSysFail(void)
 {
-    MC68230SetPCDR(&pit, MC68230GetPCDR(&pit) & ~0x02);  // Deassert SYSFAIL by setting bit 1 to 0.
+    MC68230SetPCDR(pit, MC68230GetPCDR(pit) & ~0x02);  // Deassert SYSFAIL by setting bit 1 to 0.
 }
 
 void BoardAssertSysFail(void)
 {
-    MC68230SetPCDR(&pit, MC68230GetPCDR(&pit) | 0x02);  // Assert SYSFAIL by setting bit 1 to 1.
+    MC68230SetPCDR(pit, MC68230GetPCDR(pit) | 0x02);  // Assert SYSFAIL by setting bit 1 to 1.
 }
 
 /**
@@ -109,7 +111,6 @@ int main(void)
         //printf("VACS: %p\n", vme32offs);
         VACSv1SetForAddress(vme32offs, false, false, false);
     }
-
     vbic = VBICInit(0xfff90000);
     BoardInitPIT();
     BoardSetVMEBusReqLvl(0);                       // Bus req level 0
@@ -121,19 +122,25 @@ int main(void)
 
     VBICConfigMSM(vbic, timer_isr, 0x100, 2);
 
-    VBICConfigVMEInt(vbic, VME_INTERRUPTER_1, vme_isr, 0x158, 1);
-    VBICConfigVMEInt(vbic, VME_INTERRUPTER_2, vme_isr, 0x158, 2);
-    VBICConfigVMEInt(vbic, VME_INTERRUPTER_3, vme_isr, 0x158, 3);
-    VBICConfigVMEInt(vbic, VME_INTERRUPTER_4, vme_isr, 0x158, 4);
-    VBICConfigVMEInt(vbic, VME_INTERRUPTER_5, vme_isr, 0x158, 5);
-    VBICConfigVMEInt(vbic, VME_INTERRUPTER_6, vme_isr, 0x158, 6);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_1, vme_isr, 0x01, 1);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_2, vme_isr, 0x02, 2);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_3, vme_isr, 0x03, 3);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_4, vme_isr, 0x04, 4);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_5, vme_isr, 0x05, 5);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_6, vme_isr, 0x06, 6);
+    VBICConfigVMEInt(vbic, VME_INTERRUPTER_6, vme_isr, 0x07, 6);
 
     VBICEnableVMEInt(vbic, VME_INTERRUPTER_1);
     VBICEnableVMEInt(vbic, VME_INTERRUPTER_2);
     VBICEnableVMEInt(vbic, VME_INTERRUPTER_3);
     VBICEnableVMEInt(vbic, VME_INTERRUPTER_4);
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_5);
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_6);
+    VBICEnableVMEInt(vbic, VME_INTERRUPTER_7);
 
     BoardDeAssertSysFail();
+
+    ascu2 = ASCU2Init(ascu2_addr);
 
     asm volatile("and.w #0xf0ff,%sr"); // Enable interrupts
 
