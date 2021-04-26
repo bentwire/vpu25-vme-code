@@ -11,24 +11,24 @@ static inline void enable_irqs(void)
 
 static inline uint16_t disable_irqs(void)
 {
-    uint16_t sr;
+    uint16_t reg;
 
     // save sr.
-    asm volatile("move.w %sr,%0\n\t": /* outputs */ "=r"(sr)
+    asm volatile("move.w %%sr,%0\n\t" : /* outputs */ "=r"(reg)
                                       : /* inputs  */
                                       : /* clobbers */);
     // Disable interrupts.
     asm volatile("or.w #0x0700,%sr"); // Disable interrupts
 
-    return sr;
+    return reg;
 }
 
 static inline void restore_irqs(uint16_t sr)
 {
     // restore sr.
-    asm volatile("move.w %0,%sr\n\t": /* outputs */
-                                      : /* inputs  */ "r" (sr)
-                                      : /* clobbers */);
+    asm volatile("move.w %0,%%sr\n\t" : /* outputs */
+                                     : /* inputs  */  "r" (sr)
+                                     : /* clobbers */);
 
 }
 

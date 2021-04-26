@@ -1,4 +1,4 @@
-C_FILES = vpu25.c ascu2.c mc68230.c vbic.c
+C_FILES = vpu25.c ascu2.c mc68230.c vbic.c mc68153.c
 O_FILES = $(patsubst %.c,%.o,$(C_FILES))
 D_FILES = $(patsubst %.c,%.d,$(C_FILES))
 
@@ -8,7 +8,7 @@ LDFLAGS = -T vpu25.ld -Xlinker -Map=vpu25.map
 
 all: vpu25.run
 
-vpu25.elf: vpu25.o ascu2.o mc68230.o vbic.o
+vpu25.elf: $(O_FILES) ###vpu25.o ascu2.o mc68230.o vbic.o
 	m68k-elf-gcc $(GCCFLAGS) -O $^ -o $@ $(LDFLAGS)
 
 %.run: %.elf

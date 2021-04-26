@@ -142,6 +142,9 @@ int main(void)
 
     ascu2 = ASCU2Init(ascu2_addr);
 
+    ASCU2ConfigureTESTInt(ascu2, 0xAA, 1);
+    ASCU2EnableTESTInt(ascu2);
+
     asm volatile("and.w #0xf0ff,%sr"); // Enable interrupts
 
     //while(getchar() != 0x1b)  // Hit escape to quit.

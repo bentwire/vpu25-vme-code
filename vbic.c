@@ -7,7 +7,7 @@ struct _vbic_dev_t
 };
 
 #ifndef VBIC_VME_BASE_VEC
-#define VBIC_VME_BASE_VEC 0x3F0
+#define VBIC_VME_BASE_VEC 0x3E0
 #endif
 
 static vbic_dev_t VBIC; // There is only ever 1 VBIC.
@@ -94,8 +94,13 @@ static void vbic_vme_handler(uint16_t vec)
     uint8_t virmask;
     uint8_t virirqs;
 
+    uint16_t save = disable_irqs();
+
     virscan = *(VBIC.base_addr + (IRSCANC * 2) + 1);
     virmask = *(VBIC.base_addr + (IRMASKC * 2) + 1);
+
+    restore_irqs(save);
+
     virirqs = virscan & virmask; // Make sure we only use the enabled IRQ's.
 
     for (int shift = 0; shift < 7; shift++)
@@ -643,7 +648,14 @@ void VBICDisbleLocalInt(vbic_dev_t *dev, lir_t which)
 
 static void VBICInitVMEInts(vbic_dev_t *dev, irq_handler_t handler, uintptr_t vec)
 {
-    *(uintptr_t*)(vec) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*0) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*1) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*2) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*3) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*4) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*5) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*6) = (uint32_t)(handler);
+    *(uintptr_t*)(vec+4*7) = (uint32_t)(handler);
 
     VBICSetVMEVect(dev, (uint8_t)(vec/4) & 0xF8);
 }
